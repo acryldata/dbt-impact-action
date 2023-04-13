@@ -28,6 +28,7 @@ runs:
     # TODO: ensure that this is running on a PR
 
     - name: Check dbt installation and install acryl-datahub
+      shell: bash
       run: |
         dbt --version
         pip install https://docs-website-hy1muoklg-acryldata.vercel.app/artifacts/wheels/acryl_datahub-0.0.0.dev1-py3-none-any.whl
@@ -35,6 +36,7 @@ runs:
     
     # Generate the previous manifest.
     - name: Generate previous manifest
+      shell: bash
       run: |
         git checkout ${{ github.base_ref }}
         dbt ls
@@ -44,6 +46,7 @@ runs:
     # Run impact analysis script.
     - name: Run impact analysis
       id: impact-analysis
+      shell: bash
       run: |
         DBT_ARTIFACT_STATE_PATH=target-previous python ${{ github.action_path }}/impact_analysis.py
         cat impact_analysis.md
