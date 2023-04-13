@@ -1,10 +1,10 @@
 name: Acryl dbt Impact Analysis
 description: Comments on PRs with the impact of dbt changes.
 inputs:
-  datahub_host:
+  datahub_gms_host:
     description: "DataHub GMS host."
     required: true
-  datahub_token:
+  datahub_gms_token:
     description: "DataHub GMS token."
     required: false
   datahub_frontend_url:
@@ -58,8 +58,8 @@ runs:
         cat impact_analysis.md >> $GITHUB_OUTPUT
         echo "$EOF" >> $GITHUB_OUTPUT
       env:
-        DATAHUB_GMS_HOST: ${{ inputs.datahub_host }}
-        DATAHUB_GMS_TOKEN: ${{ inputs.datahub_token }}
+        DATAHUB_GMS_HOST: ${{ inputs.datahub_gms_host }}
+        DATAHUB_GMS_TOKEN: ${{ inputs.datahub_gms_token }}
         DATAHUB_FRONTEND_URL: ${{ inputs.datahub_frontend_url }}
 
     # Post a comment on the PR.
