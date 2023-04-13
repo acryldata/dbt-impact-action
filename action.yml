@@ -1,0 +1,66 @@
+name: Acryl dbt Impact Analysis
+description: Comments on PRs with the impact of dbt changes.
+inputs:
+  datahub_host:
+    description: "DataHub GMS host."
+    required: true
+  datahub_token:
+    description: "DataHub GMS token."
+    required: false
+  datahub_frontend_url:
+    description: "DataHub frontend URL."
+    required: true
+
+  dbt_project_folder:
+    description: "dbt project folder. Defaults to ."
+    default: '.'
+
+runs:
+  using: "composite"
+  steps:
+    # - uses: actions/checkout@v3
+    #   with:
+    #     # We need git history for the git merge-base.
+    #     fetch-depth: 0
+    # TODO: For large repos, use this instead:
+    # - uses: rmacklin/fetch-through-merge-base@v0
+
+    # TODO: ensure that this is running on a PR
+
+    - name: Check dbt installation and install acryl-datahub
+      run: |
+        dbt --version
+        pip install https://docs-website-hy1muoklg-acryldata.vercel.app/artifacts/wheels/acryl_datahub-0.0.0.dev1-py3-none-any.whl
+        pip cache remove 'acryl*'
+    
+    # Generate the previous manifest.
+    - name: Generate previous manifest
+      run: |
+        git checkout ${{ github.base_ref }}
+        dbt ls
+        cp -r target target-previous
+        git checkout -
+    
+    # Run impact analysis script.
+    - name: Run impact analysis
+      id: impact-analysis
+      run: |
+        DBT_ARTIFACT_STATE_PATH=target-previous python ${{ github.action_path }}/impact_analysis.py
+        cat impact_analysis.md
+
+        # Output a multiline string to an output parameter.
+        # Technique from https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#multiline-strings
+        EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+        echo "IMPACT_ANALYSIS_MD<<$EOF" >> $GITHUB_OUTPUT
+        cat impact_analysis.md >> $GITHUB_OUTPUT
+        echo "$EOF" >> $GITHUB_OUTPUT
+      env:
+        DATAHUB_GMS_HOST: ${{ inputs.datahub_host }}
+        DATAHUB_GMS_TOKEN: ${{ inputs.datahub_token }}
+        DATAHUB_FRONTEND_URL: ${{ inputs.datahub_frontend_url }}
+
+    # Post a comment on the PR.
+    - uses: marocchino/sticky-pull-request-comment@v2
+      with:
+        header: acryl-impact-analysis
+        message: ${{ steps.impact-analysis.outputs.IMPACT_ANALYSIS_MD }}
