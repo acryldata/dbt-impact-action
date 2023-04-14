@@ -26,41 +26,18 @@ runs:
     # - uses: rmacklin/fetch-through-merge-base@v0
 
     # TODO: ensure that this is running on a PR
-
-    - name: Check dbt installation and install acryl-datahub
-      shell: bash
-      run: |
-        dbt --version
-        pip install https://docs-website-hy1muoklg-acryldata.vercel.app/artifacts/wheels/acryl_datahub-0.0.0.dev1-py3-none-any.whl
-        pip cache remove 'acryl*'
     
-    # Generate the previous manifest.
-    - name: Generate previous manifest
-      shell: bash
-      run: |
-        git checkout ${{ github.base_ref }}
-        dbt ls
-        cp -r target target-previous
-        git checkout -
-    
-    # Run impact analysis script.
     - name: Run impact analysis
       id: impact-analysis
       shell: bash
-      run: |
-        DBT_ARTIFACT_STATE_PATH=target-previous python ${{ github.action_path }}/impact_analysis.py
-        cat impact_analysis.md
-
-        # Output a multiline string to an output parameter.
-        # Technique from https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#multiline-strings
-        EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-        echo "IMPACT_ANALYSIS_MD<<$EOF" >> $GITHUB_OUTPUT
-        cat impact_analysis.md >> $GITHUB_OUTPUT
-        echo "$EOF" >> $GITHUB_OUTPUT
+      run: ${{ github.action_path }}/impact-analysis.sh
       env:
+        DBT_PROJECT_FOLDER: ${{ inputs.dbt_project_folder }}
         DATAHUB_GMS_HOST: ${{ inputs.datahub_gms_host }}
         DATAHUB_GMS_TOKEN: ${{ inputs.datahub_gms_token }}
         DATAHUB_FRONTEND_URL: ${{ inputs.datahub_frontend_url }}
+        GITHUB_ACTION_PATH: ${{ github.action_path }}
+        GITHUB_BASE_REF: ${{ github.base_ref }}
 
     # Post a comment on the PR.
     - uses: marocchino/sticky-pull-request-comment@v2
