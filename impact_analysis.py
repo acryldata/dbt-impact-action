@@ -13,6 +13,7 @@ DATAHUB_TOKEN: Optional[str] = os.getenv("DATAHUB_GMS_TOKEN")
 DATAHUB_FRONTEND_URL = os.environ["DATAHUB_FRONTEND_URL"]
 
 DBT_ID_PROP = "dbt_unique_id"
+MAX_IMPACTED_DOWNSTREAMS = 15
 
 graph = DataHubGraph(DatahubClientConfig(server=DATAHUB_SERVER, token=DATAHUB_TOKEN))
 
@@ -163,7 +164,9 @@ def get_impact_analysis(urn: str):
     # Sort by number of hops from the root node.
     # downstreams.sort(key=lambda x: x["degree"])
 
-    return [downstream["entity"] for downstream in downstreams]
+    downstream_details = [downstream["entity"] for downstream in downstreams]
+    print(f"urn: {urn}, downstreams: {len(downstream_details)}")
+    return downstream_details
 
 
 def datahub_url_from_urn(urn: str) -> str:
@@ -225,10 +228,16 @@ def main():
         output += (
             f"\n## [{dbt_node['original_file_path']}]({datahub_url_from_urn(urn)})\n\n"
         )
-        output += f"May impact **{len(downstreams)}** downstreams:\n"
-        for downstream in downstreams:
-            output += f"- {format_entity(downstream)}\n"
-            # TODO truncate if there's too many?
+        if downstreams:
+            output += f"May impact **{len(downstreams)}** downstreams:\n"
+            for downstream in downstreams[:MAX_IMPACTED_DOWNSTREAMS]:
+                output += f"- {format_entity(downstream)}\n"
+            if len(downstreams) > MAX_IMPACTED_DOWNSTREAMS:
+                output += (
+                    f"- ...and {len(downstreams) - MAX_IMPACTED_DOWNSTREAMS} more\n"
+                )
+        else:
+            output += f"No downstreams impacted\n"
 
     output += f"\n\n_If a dbt model is reported as changed even though it's file contents have not changed, it's likely because a dbt macro or other metadata has changed._\n\n"
 

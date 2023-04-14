@@ -8,6 +8,10 @@ This action will comment on your PRs with a summary of the impact of changes wit
 
 ## Usage
 
+Requirements:
+- You must have ingested dbt metadata into Acryl DataHub using acryl-datahub v0.10.1.1 or newer.
+- This action was tested with dbt core v1.4.x. It may work with older versions too.
+
 ```yml
 name: Acryl Impact Analysis
 
