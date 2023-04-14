@@ -1,4 +1,4 @@
-long_tail_companions:
+DBT_PROFILE_NAME:
   target: prod
   outputs:
     prod:
@@ -9,10 +9,3 @@ long_tail_companions:
       role: foo
       database: foo
       schema: foo
-      # account: "{{ env_var('DBT_SNOWFLAKE_ACCOUNT') }}"
-      # user: "{{ env_var('DBT_SNOWFLAKE_USER') }}"
-      # password: "{{ env_var('DBT_SNOWFLAKE_PASSWORD') }}"
-      # role: "{{ env_var('DBT_SNOWFLAKE_ROLE') }}"
-      # database: "{{ env_var('DBT_SNOWFLAKE_DATABASE') }}"
-      # warehouse: "{{ env_var('DBT_SNOWFLAKE_WAREHOUSE') }}"
-      # schema: "{{ env_var('DBT_SCHEMA') }}"

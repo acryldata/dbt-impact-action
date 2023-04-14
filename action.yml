@@ -11,6 +11,9 @@ inputs:
     description: "DataHub frontend URL."
     required: true
 
+  dbt_profile_name:
+    description: "dbt profile name from dbt_project.yml."
+    required: true
   dbt_project_folder:
     description: "dbt project folder. Defaults to ."
     default: '.'
@@ -32,6 +35,7 @@ runs:
       shell: bash
       run: ${{ github.action_path }}/impact_analysis.sh
       env:
+        DBT_PROFILE_NAME: ${{ inputs.dbt_profile_name }}}
         DBT_PROJECT_FOLDER: ${{ inputs.dbt_project_folder }}
         DATAHUB_GMS_HOST: ${{ inputs.datahub_gms_host }}
         DATAHUB_GMS_TOKEN: ${{ inputs.datahub_gms_token }}

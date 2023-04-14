@@ -12,6 +12,9 @@ dbt --version
 pip install acryl-datahub==0.10.1.2rc8
 pip cache remove 'acryl*'
 
+# Replace the DBT_PROFILE_NAME with the actual profile name.
+sed -i "s/DBT_PROFILE_NAME/${DBT_PROFILE_NAME}/g" ${DBT_PROFILES_DIR}/profiles.yml
+
 # Generate the previous manifest.
 git checkout ${GITHUB_BASE_REF}
 dbt ls

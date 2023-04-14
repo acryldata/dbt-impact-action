@@ -231,6 +231,7 @@ def main():
 
     output += f"\n\n_If a dbt model is reported as changed even though it's file contents have not changed, it's likely because a dbt macro or other metadata has changed._\n\n"
 
+    # TODO: Don't hardcode the output path.
     pathlib.Path("impact_analysis.md").write_text(output)
 
 
