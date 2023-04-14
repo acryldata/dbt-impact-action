@@ -37,6 +37,7 @@ cat impact_analysis.md
 
 # Output a multiline string to an output parameter.
 # Technique from https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#multiline-strings
+set +x
 EOF=$(dd if=/dev/urandom bs=10 count=1 status=none | base32)
 {
 	echo "IMPACT_ANALYSIS_MD<<$EOF"
