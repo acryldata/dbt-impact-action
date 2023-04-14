@@ -2,18 +2,27 @@
 
 set -euxo pipefail
 
-export DBT_PROFILES_DIR=${GITHUB_ACTION_PATH}/fake-dbt-profile
-
 # Check dbt installation.
-cd ${DBT_PROJECT_FOLDER}
+cd "${DBT_PROJECT_FOLDER}"
 dbt --version
 
 # Install acryl-datahub package.
 pip install acryl-datahub==0.10.1.2rc8
-pip cache remove 'acryl*'
+# pip cache remove 'acryl*'
 
-# Replace the DBT_PROFILE_NAME with the actual profile name.
-sed -i "s/DBT_PROFILE_NAME/${DBT_PROFILE_NAME}/g" "${DBT_PROFILES_DIR}/profiles.yml"
+# Set DBT_PROFILE_NAME if not provided.
+if [ -z "${DBT_PROFILE_NAME}" ]; then
+	echo 'Reading DBT_PROFILE_NAME from dbt_project.yml'
+	DBT_PROFILE_NAME=$(python "${GITHUB_ACTION_PATH}/read_dbt_profile_name.py")
+fi
+
+# Print some debug info.
+echo "dbt adapter: ${DBT_ADAPTER}"
+echo "dbt profile name: ${DBT_PROFILE_NAME}"
+
+# Replace the DBT_PROFILE_NAME for the wanted adapter with the actual profile name.
+export DBT_PROFILES_DIR=${GITHUB_ACTION_PATH}/fake-dbt-profile
+sed -i "s/DBT_PROFILE_NAME/${DBT_PROFILE_NAME}_${DBT_ADAPTER}/g" "${DBT_PROFILES_DIR}/profiles.yml"
 # cat "${DBT_PROFILES_DIR}/profiles.yml"
 
 # Generate the previous manifest.
@@ -33,4 +42,4 @@ EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
 	echo "IMPACT_ANALYSIS_MD<<$EOF"
 	cat impact_analysis.md
 	echo "$EOF"
-} >> $GITHUB_ENV
+} >> "$GITHUB_ENV"
