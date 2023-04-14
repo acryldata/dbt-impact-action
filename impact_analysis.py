@@ -44,7 +44,8 @@ def determine_changed_dbt_models() -> List[DbtNodeInfo]:
             # fmt: on
         ],
         check=True,
-        capture_output=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
         text=True,
     )
 
