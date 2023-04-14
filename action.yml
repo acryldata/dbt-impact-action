@@ -30,7 +30,7 @@ runs:
     - name: Run impact analysis
       id: impact-analysis
       shell: bash
-      run: ${{ github.action_path }}/impact-analysis.sh
+      run: ${{ github.action_path }}/impact_analysis.sh
       env:
         DBT_PROJECT_FOLDER: ${{ inputs.dbt_project_folder }}
         DATAHUB_GMS_HOST: ${{ inputs.datahub_gms_host }}
