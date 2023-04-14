@@ -30,7 +30,10 @@ runs:
     # TODO: For large repos, use this instead:
     # - uses: rmacklin/fetch-through-merge-base@v0
 
-    # TODO: ensure that this is running on a PR
+    # TODO: Add better error checking:
+    # - Validate that we have sufficient git history.
+    # - Somehow ensure that this is running on a PR.
+    # - Ensure that the adapter is one that we support.
     
     - name: Run impact analysis
       id: impact-analysis
