@@ -35,7 +35,7 @@ runs:
       shell: bash
       run: ${{ github.action_path }}/impact_analysis.sh
       env:
-        DBT_PROFILE_NAME: ${{ inputs.dbt_profile_name }}}
+        DBT_PROFILE_NAME: ${{ inputs.dbt_profile_name }}
         DBT_PROJECT_FOLDER: ${{ inputs.dbt_project_folder }}
         DATAHUB_GMS_HOST: ${{ inputs.datahub_gms_host }}
         DATAHUB_GMS_TOKEN: ${{ inputs.datahub_gms_token }}
