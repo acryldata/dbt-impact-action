@@ -13,7 +13,8 @@ DATAHUB_TOKEN: Optional[str] = os.getenv("DATAHUB_GMS_TOKEN")
 DATAHUB_FRONTEND_URL = os.environ["DATAHUB_FRONTEND_URL"]
 
 DBT_ID_PROP = "dbt_unique_id"
-MAX_IMPACTED_DOWNSTREAMS = 15
+MAX_IMPACTED_DOWNSTREAMS = 50
+MAX_DOWNSTREAMS_TO_FETCH = 1000
 
 graph = DataHubGraph(DatahubClientConfig(server=DATAHUB_SERVER, token=DATAHUB_TOKEN))
 
@@ -91,11 +92,12 @@ def get_datahub_info(urn: str):
 
 
 IMPACT_ANALYSIS_QUERY = """\
-query GetLineage($urn: String!) {
+query GetLineage($urn: String!, $count: Int!) {
   searchAcrossLineage(
     input: {
       urn: $urn,
-      direction: DOWNSTREAM
+      direction: DOWNSTREAM,
+      count: $count,
     }
   ) {
     searchResults {
@@ -150,7 +152,13 @@ query GetLineage($urn: String!) {
 
 
 def get_impact_analysis(urn: str):
-    result = graph.execute_graphql(IMPACT_ANALYSIS_QUERY, variables={"urn": urn})
+    result = graph.execute_graphql(
+        IMPACT_ANALYSIS_QUERY,
+        variables={
+            "urn": urn,
+            "count": MAX_DOWNSTREAMS_TO_FETCH,
+        },
+    )
 
     downstreams = result["searchAcrossLineage"]["searchResults"]
 
@@ -233,11 +241,14 @@ def main():
             for downstream in downstreams[:MAX_IMPACTED_DOWNSTREAMS]:
                 output += f"- {format_entity(downstream)}\n"
             if len(downstreams) > MAX_IMPACTED_DOWNSTREAMS:
-                output += (
-                    f"- ...and {len(downstreams) - MAX_IMPACTED_DOWNSTREAMS} more\n"
-                )
+                if len(downstreams) >= MAX_DOWNSTREAMS_TO_FETCH:
+                    output += f"- ...and at least {len(downstreams) - MAX_IMPACTED_DOWNSTREAMS} more (truncated)\n"
+                else:
+                    output += (
+                        f"- ...and {len(downstreams) - MAX_IMPACTED_DOWNSTREAMS} more\n"
+                    )
         else:
-            output += f"No downstreams impacted\n"
+            output += f"No downstreams impacted.\n"
 
     output += f"\n\n_If a dbt model is reported as changed even though it's file contents have not changed, it's likely because a dbt macro or other metadata has changed._\n\n"
 

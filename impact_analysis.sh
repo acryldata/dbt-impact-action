@@ -6,6 +6,9 @@ set -euxo pipefail
 cd "${DBT_PROJECT_FOLDER}"
 dbt --version
 
+# Install dbt deps.
+dbt deps
+
 # Install acryl-datahub package.
 pip install acryl-datahub==0.10.1.2rc8
 # pip cache remove 'acryl*'
@@ -23,7 +26,9 @@ echo "dbt profile name: ${DBT_PROFILE_NAME}"
 # Replace the DBT_PROFILE_NAME for the wanted adapter with the actual profile name.
 export DBT_PROFILES_DIR=${GITHUB_ACTION_PATH}/fake-dbt-profile
 sed -i "s/DBT_PROFILE_NAME_${DBT_ADAPTER}/${DBT_PROFILE_NAME}/g" "${DBT_PROFILES_DIR}/profiles.yml"
-cat "${DBT_PROFILES_DIR}/profiles.yml"
+if [ "${DEBUG_MODE}" = "true" ]; then
+	cat "${DBT_PROFILES_DIR}/profiles.yml"
+fi
 
 # Generate the previous manifest.
 git checkout "${GITHUB_BASE_REF}"
@@ -33,7 +38,9 @@ git checkout -
 
 # Run impact analysis script.
 DBT_ARTIFACT_STATE_PATH=target-previous python "${GITHUB_ACTION_PATH}/impact_analysis.py"
-cat impact_analysis.md
+if [ "${DEBUG_MODE}" = "true" ]; then
+	cat impact_analysis.md
+fi
 
 # Output a multiline string to an output parameter.
 # Technique from https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#multiline-strings

@@ -19,6 +19,10 @@ inputs:
   dbt_project_folder:
     description: "dbt project folder. Defaults to ."
     default: '.'
+  
+  debug_mode:
+    description: "Set to true to enable debug mode."
+    default: 'false'
 
 runs:
   using: "composite"
@@ -48,6 +52,7 @@ runs:
         DATAHUB_FRONTEND_URL: ${{ inputs.datahub_frontend_url }}
         GITHUB_ACTION_PATH: ${{ github.action_path }}
         GITHUB_BASE_REF: ${{ github.base_ref }}
+        DEBUG_MODE: ${{ inputs.debug_mode }}
 
     # Post a comment on the PR.
     - uses: marocchino/sticky-pull-request-comment@v2

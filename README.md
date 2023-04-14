@@ -17,7 +17,8 @@ name: Acryl Impact Analysis
 
 on:
   pull_request:
-    branches: [ "main" ]  # TODO(developer): Change this to your main branch.
+    # TODO(developer): Change this to your main branch.
+    branches: [ "main" ]
 
 permissions:
   contents: read
@@ -34,13 +35,14 @@ jobs:
         # We need the full git history to get a proper list of changed files.
         fetch-depth: 0
 
-    # This piece is standard boilerplate for any dbt project.
-    # It assumes that your requirements.txt file will install
-    # dbt and the dbt adapter you're using.
     - name: Set up Python
       uses: actions/setup-python@v3
       with:
         python-version: "3.10"
+
+    # TODO(developer): Update this portion to point at your pip requirements file.
+    # We assume that this step will install dbt and the dbt adapter you're using.
+    # For example, if might install `dbt-snowflake>=1.5.0`.
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip wheel
@@ -49,8 +51,8 @@ jobs:
     - name: Run impact analysis
       uses: acryldata/dbt-impact-analysis-action@main
       with:
-        # The name of your dbt adapter.
-        # One of [bigquery, postgres, redshift, snowflake].
+        # TODO(developer): Update this with your dbt project config.
+        # The name of your dbt adapter. One of [bigquery, postgres, redshift, snowflake].
         # Let us know if you need support for another adapter.
         dbt_adapter: postgres
 
@@ -58,6 +60,7 @@ jobs:
         # specify the path to it here.
         # dbt_project_folder: .
 
+        # TODO(developer): Update this with your Acryl DataHub config.
         # Credentials to connect to Acryl.
         datahub_gms_host: https://<customer>.acryl.io/gms
         datahub_gms_token: ${{ secrets.ACRYL_GMS_TOKEN }}
