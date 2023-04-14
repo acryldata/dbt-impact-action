@@ -22,8 +22,8 @@ echo "dbt profile name: ${DBT_PROFILE_NAME}"
 
 # Replace the DBT_PROFILE_NAME for the wanted adapter with the actual profile name.
 export DBT_PROFILES_DIR=${GITHUB_ACTION_PATH}/fake-dbt-profile
-sed -i "s/DBT_PROFILE_NAME/${DBT_PROFILE_NAME}_${DBT_ADAPTER}/g" "${DBT_PROFILES_DIR}/profiles.yml"
-# cat "${DBT_PROFILES_DIR}/profiles.yml"
+sed -i "s/DBT_PROFILE_NAME_${DBT_ADAPTER}/${DBT_PROFILE_NAME}/g" "${DBT_PROFILES_DIR}/profiles.yml"
+cat "${DBT_PROFILES_DIR}/profiles.yml"
 
 # Generate the previous manifest.
 git checkout "${GITHUB_BASE_REF}"
