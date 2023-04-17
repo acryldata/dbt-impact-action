@@ -177,10 +177,17 @@ def get_impact_analysis(urn: str):
     return downstream_details
 
 
-def datahub_url_from_urn(urn: str) -> str:
+def datahub_url_from_urn(urn: str, suffix: str = None) -> str:
     entity_type = guess_entity_type(urn)
-    # TODO: This won't work for dataJobs / dataFlows.
-    return f"{DATAHUB_FRONTEND_URL}/{entity_type}/{Urn.url_encode(urn)}"
+    if entity_type == "dataJob":
+        entity_type = "tasks"
+    elif entity_type == "dataFlow":
+        entity_type = "pipelines"
+
+    url = f"{DATAHUB_FRONTEND_URL}/{entity_type}/{Urn.url_encode(urn)}"
+    if suffix:
+        url += f"/{suffix}"
+    return url
 
 
 def format_entity(downstream: Dict) -> str:
@@ -241,12 +248,7 @@ def main():
             for downstream in downstreams[:MAX_IMPACTED_DOWNSTREAMS]:
                 output += f"- {format_entity(downstream)}\n"
             if len(downstreams) > MAX_IMPACTED_DOWNSTREAMS:
-                if len(downstreams) >= MAX_DOWNSTREAMS_TO_FETCH:
-                    output += f"- ...and at least {len(downstreams) - MAX_IMPACTED_DOWNSTREAMS} more (truncated)\n"
-                else:
-                    output += (
-                        f"- ...and {len(downstreams) - MAX_IMPACTED_DOWNSTREAMS} more\n"
-                    )
+                output += f"- ...and [{len(downstreams) - MAX_IMPACTED_DOWNSTREAMS} more]({datahub_url_from_urn(urn, suffix='/Lineage')})\n"
         else:
             output += f"No downstreams impacted.\n"
 
