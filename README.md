@@ -1,6 +1,6 @@
-# dbt-impact-analysis-action
+# Acryl dbt action
 
-This action will comment on your PRs with a summary of the impact of changes within a dbt project.
+This GitHub action will comment on your PRs with a summary of the impact of changes within a dbt project.
 
 <p align="center" width="70%">
   <img src="impact-analysis-screenshot.png" alt="Impact Analysis Screenshot" width="600"/>
