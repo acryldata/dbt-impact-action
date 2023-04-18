@@ -49,7 +49,7 @@ jobs:
         pip install -r requirements.txt
 
     - name: Run impact analysis
-      uses: acryldata/dbt-impact-analysis-action@main
+      uses: acryldata/gh-action-dbt@main
       with:
         # TODO(developer): Update this with your dbt project config.
         # The name of your dbt adapter. One of [bigquery, postgres, redshift, snowflake].
