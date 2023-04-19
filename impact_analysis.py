@@ -1,4 +1,5 @@
 import json
+import traceback
 import os
 import pathlib
 import subprocess
@@ -81,6 +82,9 @@ def determine_changed_dbt_models() -> List[DbtNodeInfo]:
 
 
 def find_datahub_urns(dbt_node_ids: List[str]) -> List[str]:
+    if not dbt_node_ids:
+        return []
+
     filter_conditions = [
         {
             "field": "customProperties",
@@ -283,6 +287,7 @@ def main():
     try:
         dbt_impact_analysis()
     except Exception as e:
+        traceback.print_exc()
         print(f"ERROR: {e}")
         OUTPUT_PATH.write_text(
             f"""# Acryl Impact Analysis
