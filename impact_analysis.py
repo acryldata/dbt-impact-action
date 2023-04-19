@@ -7,16 +7,22 @@ from typing import Dict, List, Optional, TypedDict
 from datahub.ingestion.graph.client import DatahubClientConfig, DataHubGraph
 from datahub.metadata.schema_classes import DatasetPropertiesClass
 from datahub.utilities.urns.urn import Urn, guess_entity_type
+from datahub.telemetry import telemetry
 
 DATAHUB_SERVER = os.environ["DATAHUB_GMS_HOST"]
 DATAHUB_TOKEN: Optional[str] = os.getenv("DATAHUB_GMS_TOKEN")
 DATAHUB_FRONTEND_URL = os.environ["DATAHUB_FRONTEND_URL"]
 
+OUTPUT_PATH = pathlib.Path("impact_analysis.md")
 DBT_ID_PROP = "dbt_unique_id"
 MAX_IMPACTED_DOWNSTREAMS = 50
 MAX_DOWNSTREAMS_TO_FETCH = 1000
 
 graph = DataHubGraph(DatahubClientConfig(server=DATAHUB_SERVER, token=DATAHUB_TOKEN))
+
+
+class ImpactAnalysisError(Exception):
+    pass
 
 
 class DbtNodeInfo(TypedDict):
@@ -30,33 +36,40 @@ def determine_changed_dbt_models() -> List[DbtNodeInfo]:
 
     # Running dbt ls also regenerates the manifest file, so it
     # will always produce output that is up-to-date with the latest changes.
-    res = subprocess.run(
-        [
-            "dbt",
-            "ls",
-            # fmt: off
-            # Use the manifest file from the previous run.
-            "-s", "state:modified",
-            # Limit to desired node types.
-            "--resource-type", "model",
-            "--resource-type", "snapshot",
-            # Output formatting.
-            "--output", "json",
-            "--output-keys", "unique_id,original_file_path",
-            # fmt: on
-        ],
-        check=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        text=True,
-    )
+    try:
+        res = subprocess.run(
+            [
+                "dbt",
+                "ls",
+                # fmt: off
+                # Use the manifest file from the previous run.
+                "-s", "state:modified",
+                # Limit to desired node types.
+                "--resource-type", "model",
+                "--resource-type", "snapshot",
+                # Output formatting.
+                "--output", "json",
+                "--output-keys", "unique_id,original_file_path",
+                # fmt: on
+            ],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+        )
+    except subprocess.CalledProcessError as e:
+        raise ImpactAnalysisError("Unable to determine changed dbt nodes") from e
 
-    dbt_nodes: List[DbtNodeInfo] = []
-    for line in res.stdout.splitlines():
-        dbt_info: DbtNodeInfo = json.loads(line)
-        dbt_nodes.append(dbt_info)
+    try:
+        dbt_nodes: List[DbtNodeInfo] = []
+        for line in res.stdout.splitlines():
+            dbt_info: DbtNodeInfo = json.loads(line)
+            dbt_nodes.append(dbt_info)
 
-    return dbt_nodes
+        return dbt_nodes
+    except json.decoder.JSONDecodeError as e:
+        print(f"Unable to determine changed dbt models: {e}. Output was {res.stdout}")
+        raise ImpactAnalysisError("Failed to parse dbt output") from e
 
 
 def find_datahub_urns(dbt_node_ids: List[str]) -> List[str]:
@@ -205,7 +218,8 @@ def format_entity(downstream: Dict) -> str:
     return f"{platform} {type} [{name}]({url})"
 
 
-def main():
+@telemetry.with_telemetry()
+def dbt_impact_analysis():
     # Step 1 - determine which dbt nodes are impacted by the changes in a given PR.
     changed_dbt_nodes = determine_changed_dbt_models()
     dbt_id_to_dbt_node = {node["unique_id"]: node for node in changed_dbt_nodes}
@@ -254,8 +268,22 @@ def main():
 
     output += f"\n\n_If a dbt model is reported as changed even though it's file contents have not changed, it's likely because a dbt macro or other metadata has changed._\n\n"
 
-    # TODO: Don't hardcode the output path.
-    pathlib.Path("impact_analysis.md").write_text(output)
+    OUTPUT_PATH.write_text(output)
+
+
+def main():
+    try:
+        dbt_impact_analysis()
+    except Exception as e:
+        print(f"ERROR: {e}")
+        OUTPUT_PATH.write_text(
+            f"""# Acryl Impact Analysis
+
+Failed to run impact analysis: {e}
+
+See the logs for full details.
+"""
+        )
 
 
 if __name__ == "__main__":
