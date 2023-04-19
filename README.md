@@ -13,6 +13,7 @@ Requirements:
 - This action was tested with dbt core v1.4.x. It may work with older versions too.
 
 ```yml
+# Put this in .github/workflows/acryl-dbt-impact.yml.
 name: Acryl Impact Analysis
 
 on:

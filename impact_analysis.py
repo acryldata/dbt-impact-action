@@ -60,6 +60,14 @@ def determine_changed_dbt_models() -> List[DbtNodeInfo]:
     except subprocess.CalledProcessError as e:
         raise ImpactAnalysisError("Unable to determine changed dbt nodes") from e
 
+    # dbt prints out a warning if nothing was found.
+    if (
+        "The selection criterion 'state:modified' does not match any nodes"
+        in res.stdout
+        and "No nodes selected!" in res.stdout
+    ):
+        return []
+
     try:
         dbt_nodes: List[DbtNodeInfo] = []
         for line in res.stdout.splitlines():
@@ -238,13 +246,13 @@ def dbt_impact_analysis():
     # Step 3 - generate downstream impact analysis for each datahub urn.
     downstreams_report = {urn: get_impact_analysis(urn) for urn in urns}
 
-    # Step 4 - format the output message as markdown.
     all_impacted_urns = {
         downstream["urn"]
         for downstreams in downstreams_report.values()
         for downstream in downstreams
     }
 
+    # Step 4 - format the output message as markdown.
     output = "# Acryl Impact Analysis\n\n"
     output += f"- **{len(changed_dbt_nodes)}** dbt models changed\n"
     output += (
