@@ -55,7 +55,7 @@ runs:
         DEBUG_MODE: ${{ inputs.debug_mode }}
 
     # Post a comment on the PR.
-    - uses: marocchino/sticky-pull-request-comment@v2
+    - uses: marocchino/sticky-pull-request-comment@v2.5.0
       with:
         header: acryl-impact-analysis
         message: ${{ steps.impact-analysis.outputs.IMPACT_ANALYSIS_MD }}
