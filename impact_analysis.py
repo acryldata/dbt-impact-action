@@ -16,7 +16,7 @@ DATAHUB_FRONTEND_URL = os.environ["DATAHUB_FRONTEND_URL"]
 
 OUTPUT_PATH = pathlib.Path("impact_analysis.md")
 DBT_ID_PROP = "dbt_unique_id"
-MAX_IMPACTED_DOWNSTREAMS = 50
+MAX_IMPACTED_DOWNSTREAMS = 30
 MAX_DOWNSTREAMS_TO_FETCH = 1000
 
 graph = DataHubGraph(DatahubClientConfig(server=DATAHUB_SERVER, token=DATAHUB_TOKEN))
