@@ -1,14 +1,14 @@
 import json
-import traceback
 import os
 import pathlib
 import subprocess
+import traceback
 from typing import Dict, List, Optional, TypedDict
 
 from datahub.ingestion.graph.client import DatahubClientConfig, DataHubGraph
 from datahub.metadata.schema_classes import DatasetPropertiesClass
-from datahub.utilities.urns.urn import Urn, guess_entity_type
 from datahub.telemetry import telemetry
+from datahub.utilities.urns.urn import Urn, guess_entity_type
 
 DATAHUB_SERVER = os.environ["DATAHUB_GMS_HOST"]
 DATAHUB_TOKEN: Optional[str] = os.getenv("DATAHUB_GMS_TOKEN")
@@ -202,7 +202,7 @@ def get_impact_analysis(urn: str):
     return downstream_details
 
 
-def datahub_url_from_urn(urn: str, suffix: str = None) -> str:
+def datahub_url_from_urn(urn: str, suffix: Optional[str] = None) -> str:
     entity_type = guess_entity_type(urn)
     if entity_type == "dataJob":
         entity_type = "tasks"
@@ -257,7 +257,7 @@ def dbt_impact_analysis():
     }
 
     # Step 4 - format the output message as markdown.
-    output = "# Acryl Impact Analysis\n\n"
+    output = "## Acryl Impact Analysis\n\n"
     output += f"- **{len(changed_dbt_nodes)}** dbt models changed\n"
     output += (
         f"- **{len(all_impacted_urns)}** downstream entities potentially impacted\n"
@@ -267,7 +267,7 @@ def dbt_impact_analysis():
         dbt_node = dbt_id_to_dbt_node[urn_to_dbt_id[urn]]
 
         output += (
-            f"\n## [{dbt_node['original_file_path']}]({datahub_url_from_urn(urn)})\n\n"
+            f"\n### [{dbt_node['original_file_path']}]({datahub_url_from_urn(urn)})\n\n"
         )
         if downstreams:
             output += f"May impact **{len(downstreams)}** downstreams:\n"
@@ -276,9 +276,9 @@ def dbt_impact_analysis():
             if len(downstreams) > MAX_IMPACTED_DOWNSTREAMS:
                 output += f"- ...and [{len(downstreams) - MAX_IMPACTED_DOWNSTREAMS} more]({datahub_url_from_urn(urn, suffix='/Lineage')})\n"
         else:
-            output += f"No downstreams impacted.\n"
+            output += "No downstreams impacted.\n"
 
-    output += f"\n\n_If a dbt model is reported as changed even though it's file contents have not changed, it's likely because a dbt macro or other metadata has changed._\n\n"
+    output += "\n\n_If a dbt model is reported as changed even though it's file contents have not changed, it's likely because a dbt macro or other metadata has changed._\n\n"
 
     OUTPUT_PATH.write_text(output)
 
@@ -290,7 +290,7 @@ def main():
         traceback.print_exc()
         print(f"ERROR: {e}")
         OUTPUT_PATH.write_text(
-            f"""# Acryl Impact Analysis
+            f"""## Acryl Impact Analysis
 
 Failed to run impact analysis: {e}
 
