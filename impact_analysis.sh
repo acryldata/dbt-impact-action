@@ -9,9 +9,8 @@ dbt --version
 # Install dbt deps.
 dbt deps
 
-# Install acryl-datahub package.
-pip install acryl-datahub==0.10.1.2rc8
-# pip cache remove 'acryl*'
+# Install our requirements.
+pip install -r "${GITHUB_ACTION_PATH}/requirements.txt"
 
 # Set DBT_PROFILE_NAME if not provided.
 if [ -z "${DBT_PROFILE_NAME}" ]; then

@@ -101,7 +101,7 @@ def find_datahub_urns(dbt_node_ids: List[str]) -> List[str]:
         "count": 10000,
         "filter": {"or": [{"and": [filter_cond]} for filter_cond in filter_conditions]},
     }
-    results: Dict = graph._post_generic(graph._get_search_endpoint(), search_body)
+    results: Dict = graph._post_generic(graph._search_endpoint, search_body)
 
     urns = [res["entity"] for res in results["value"]["entities"]]
 

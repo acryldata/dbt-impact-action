@@ -1,0 +1,6 @@
+dbt-core
+black
+ruff
+pytest
+mypy
+types-PyYAML

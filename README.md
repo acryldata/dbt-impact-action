@@ -1,4 +1,4 @@
-# Acryl dbt action
+# Acryl dbt Impact Analysis Action
 
 This GitHub action will comment on your PRs with a summary of the impact of changes within a dbt project.
 
