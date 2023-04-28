@@ -35,7 +35,7 @@ runs:
     - name: Run impact analysis
       id: impact-analysis
       shell: bash
-      run: ${{ github.action_path }}/impact_analysis.sh
+      run: ${{ github.action_path }}/src/impact_analysis.sh
       env:
         DBT_PROFILE_NAME: ${{ inputs.dbt_profile_name }}
         DBT_ADAPTER: ${{ inputs.dbt_adapter }}

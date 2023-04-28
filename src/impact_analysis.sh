@@ -15,7 +15,7 @@ pip install -r "${GITHUB_ACTION_PATH}/requirements.txt"
 # Set DBT_PROFILE_NAME if not provided.
 if [ -z "${DBT_PROFILE_NAME}" ]; then
 	echo 'Reading DBT_PROFILE_NAME from dbt_project.yml'
-	DBT_PROFILE_NAME=$(python "${GITHUB_ACTION_PATH}/read_dbt_profile_name.py")
+	DBT_PROFILE_NAME=$(python "${GITHUB_ACTION_PATH}/src/read_dbt_profile_name.py")
 fi
 
 # Print some debug info.
@@ -23,7 +23,7 @@ echo "dbt adapter: ${DBT_ADAPTER}"
 echo "dbt profile name: ${DBT_PROFILE_NAME}"
 
 # Replace the DBT_PROFILE_NAME for the wanted adapter with the actual profile name.
-export DBT_PROFILES_DIR=${GITHUB_ACTION_PATH}/fake-dbt-profile
+export DBT_PROFILES_DIR=${GITHUB_ACTION_PATH}/src/fake-dbt-profile
 sed -i "s/DBT_PROFILE_NAME_${DBT_ADAPTER}/${DBT_PROFILE_NAME}/g" "${DBT_PROFILES_DIR}/profiles.yml"
 if [ "${DEBUG_MODE}" = "true" ]; then
 	cat "${DBT_PROFILES_DIR}/profiles.yml"
@@ -36,7 +36,7 @@ cp -r target target-previous
 git checkout -
 
 # Run impact analysis script.
-DBT_ARTIFACT_STATE_PATH=target-previous python "${GITHUB_ACTION_PATH}/impact_analysis.py"
+DBT_ARTIFACT_STATE_PATH=target-previous python "${GITHUB_ACTION_PATH}/src/impact_analysis.py"
 if [ "${DEBUG_MODE}" = "true" ]; then
 	cat impact_analysis.md
 fi
