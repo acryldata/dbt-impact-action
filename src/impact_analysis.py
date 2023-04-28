@@ -227,7 +227,7 @@ def format_entity(downstream: Dict) -> str:
 
 
 @telemetry.with_telemetry()
-def dbt_impact_analysis():
+def dbt_impact_analysis() -> str:
     # Step 1 - determine which dbt nodes are impacted by the changes in a given PR.
     changed_dbt_nodes = determine_changed_dbt_models()
     dbt_id_to_dbt_node = {node["unique_id"]: node for node in changed_dbt_nodes}
@@ -277,12 +277,14 @@ def dbt_impact_analysis():
 
     output += "\n\n_If a dbt model is reported as changed even though it's file contents have not changed, it's likely because a dbt macro or other metadata has changed._\n\n"
 
-    OUTPUT_PATH.write_text(output)
+    return output
 
 
 def main():
     try:
-        dbt_impact_analysis()
+        output = dbt_impact_analysis()
+
+        OUTPUT_PATH.write_text(output)
     except Exception as e:
         traceback.print_exc()
         print(f"ERROR: {e}")
