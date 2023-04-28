@@ -108,12 +108,8 @@ def find_datahub_urns(dbt_node_ids: List[str]) -> List[str]:
     return urns
 
 
-def get_datahub_info(urn: str):
-    return graph.get_aspects_for_entity(
-        urn,
-        aspects=["datasetProperties"],
-        aspect_types=[DatasetPropertiesClass],
-    )
+def get_datahub_info(urn: str) -> Optional[DatasetPropertiesClass]:
+    return graph.get_aspect(urn, DatasetPropertiesClass)
 
 
 IMPACT_ANALYSIS_QUERY = """\
@@ -240,10 +236,11 @@ def dbt_impact_analysis():
     # Step 2 - map dbt nodes to datahub urns.
     # In an ideal world, the datahub urns for dbt would just be the dbt node ids.
     urns = find_datahub_urns([node["unique_id"] for node in changed_dbt_nodes])
-    datahub_nodes = {urn: get_datahub_info(urn) for urn in urns}
+    datahub_node_props = {urn: get_datahub_info(urn) for urn in urns}
     urn_to_dbt_id = {
-        urn: node["datasetProperties"].customProperties[DBT_ID_PROP]
-        for urn, node in datahub_nodes.items()
+        urn: node.customProperties[DBT_ID_PROP]
+        for urn, node in datahub_node_props.items()
+        if node
     }
     # print(urn_to_dbt_id)
 
