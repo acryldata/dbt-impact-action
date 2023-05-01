@@ -1,6 +1,6 @@
 
 test: lint
-	# TODO
+	venv/bin/pytest tests
 
 setup:
 	# Create venv.

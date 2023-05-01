@@ -19,9 +19,6 @@ jobs:
     - name: Setup
       run: |
         just setup
-    - name: Lint
-      run: |
-        just lint
     - name: Test
       run: |
-        just test
+        just lint test
