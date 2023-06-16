@@ -38,8 +38,18 @@ class DbtNodeInfo(TypedDict):
     original_file_path: str
 
 
+def _filter_keys(obj: dict, wanted_keys: List[str]):
+    new = {k: v for k, v in obj.items() if k in wanted_keys}
+    for k in wanted_keys:
+        assert k in new, f"Missing key {k} in {obj}"
+    return new
+
+
 def determine_changed_dbt_models() -> List[DbtNodeInfo]:
     if "DBT_ARTIFACT_STATE_PATH" not in os.environ:
+        # Note: with dbt 1.5, this parameter was renamed to DBT_STATE.
+        # However, the old one continues to work, so we'll use that for now
+        # instead of adding a dbt version check.
         raise ValueError("DBT_ARTIFACT_STATE_PATH environment variable must be set")
 
     # Running dbt ls also regenerates the manifest file, so it
@@ -57,7 +67,11 @@ def determine_changed_dbt_models() -> List[DbtNodeInfo]:
                 "--resource-type", "snapshot",
                 # Output formatting.
                 "--output", "json",
-                "--output-keys", "unique_id,original_file_path",
+                # With dbt 1.4, these were comma-separated and needed to be quoted so that
+                # they go in as a single arg. With dbt 1.5, it's a list that go in
+                # as separate args. To avoid the headache, we'll just get the full
+                # json output instead.
+                # "--output-keys", "unique_id,original_file_path",
                 # fmt: on
             ],
             check=True,
@@ -79,7 +93,13 @@ def determine_changed_dbt_models() -> List[DbtNodeInfo]:
     try:
         dbt_nodes: List[DbtNodeInfo] = []
         for line in res.stdout.splitlines():
-            dbt_info: DbtNodeInfo = json.loads(line)
+            if not line.startswith("{"):
+                print(f"Skipping non-json line: {line}")
+                continue
+
+            dbt_info: DbtNodeInfo = _filter_keys(
+                json.loads(line), ["unique_id", "original_file_path"]
+            )
             dbt_nodes.append(dbt_info)
 
         return dbt_nodes
