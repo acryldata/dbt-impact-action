@@ -24,6 +24,11 @@ inputs:
     description: "Set to true to enable debug mode."
     default: 'false'
 
+  max_impacted_downstreams:
+    description: "Maximum number of downstream generations."
+    required: false
+    default: 30
+
 runs:
   using: "composite"
   steps:
@@ -46,6 +51,7 @@ runs:
         GITHUB_ACTION_PATH: ${{ github.action_path }}
         GITHUB_BASE_REF: ${{ github.base_ref }}
         DEBUG_MODE: ${{ inputs.debug_mode }}
+        MAX_IMPACTED_DOWNSTREAMS: ${{ inputs.max_impacted_downstreams }}
 
     # Post a comment on the PR.
     - uses: marocchino/sticky-pull-request-comment@v2.5.0
