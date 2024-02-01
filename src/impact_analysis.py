@@ -6,16 +6,15 @@ import subprocess
 import traceback
 from typing import Dict, List, Optional, TypedDict
 
-from os import environ
 from datahub.ingestion.graph.client import DatahubClientConfig, DataHubGraph
 from datahub.metadata.schema_classes import DatasetPropertiesClass
 from datahub.telemetry import telemetry
-
+from os import environ
 from rendering import datahub_url_from_urn, format_entity
 
 OUTPUT_PATH = pathlib.Path("impact_analysis.md")
 DBT_ID_PROP = "dbt_unique_id"
-MAX_IMPACTED_DOWNSTREAMS = environ.get('MAX_IMPACTED_DOWNSTREAMS') or 30
+MAX_IMPACTED_DOWNSTREAMS = environ.get("MAX_IMPACTED_DOWNSTREAMS") or 30
 MAX_DOWNSTREAMS_TO_FETCH = 1000
 
 
