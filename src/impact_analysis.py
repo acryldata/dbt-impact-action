@@ -14,7 +14,7 @@ from rendering import datahub_url_from_urn, format_entity
 
 OUTPUT_PATH = pathlib.Path("impact_analysis.md")
 DBT_ID_PROP = "dbt_unique_id"
-MAX_IMPACTED_DOWNSTREAMS = 30
+MAX_IMPACTED_DOWNSTREAMS = os.environ["MAX_IMPACTED_DOWNSTREAMS"] or 30
 MAX_DOWNSTREAMS_TO_FETCH = 1000
 
 
