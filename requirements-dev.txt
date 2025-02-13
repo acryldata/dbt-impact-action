@@ -1,6 +1,7 @@
 dbt-core
 black
 ruff==0.9.6
-pytest
+pytest==8.3.4
+pytest-cov==6.0.0
 mypy
 types-PyYAML
