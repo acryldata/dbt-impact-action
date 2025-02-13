@@ -1,6 +1,6 @@
 
 test: lint
-	pytest tests --cov-report=xml --junitxml=junit.xml -o junit_family=legacy
+	pytest tests --cov=src --cov-report=xml:coverage.xml --junitxml=junit.xml -o junit_family=legacy
 
 setup:
 	uv pip install --upgrade pip wheel setuptools
