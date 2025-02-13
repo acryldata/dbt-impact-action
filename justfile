@@ -4,8 +4,9 @@ test: lint
 
 setup:
 	# Create venv.
-	python3 -m venv venv
 	venv/bin/pip install --upgrade uv
+	uv venv venv --python 3.10
+	. venv/bin/activate
 	venv/bin/uv pip install --upgrade pip wheel setuptools
 	venv/bin/uv pip install -r requirements.txt -r requirements-dev.txt
 
