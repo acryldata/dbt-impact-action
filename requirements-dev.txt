@@ -1,6 +1,6 @@
 dbt-core
 black
-ruff
+ruff==0.9.6
 pytest
 mypy
 types-PyYAML
