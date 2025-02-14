@@ -61,12 +61,16 @@ def determine_changed_dbt_models() -> List[DbtNodeInfo]:
                 "ls",
                 # fmt: off
                 # Use the manifest file from the previous run.
-                "-s", "state:modified",
+                "-s",
+                "state:modified",
                 # Limit to desired node types.
-                "--resource-type", "model",
-                "--resource-type", "snapshot",
+                "--resource-type",
+                "model",
+                "--resource-type",
+                "snapshot",
                 # Output formatting.
-                "--output", "json",
+                "--output",
+                "json",
                 # With dbt 1.4, these were comma-separated and needed to be quoted so that
                 # they go in as a single arg. With dbt 1.5, it's a list that go in
                 # as separate args. To avoid the headache, we'll just get the full
@@ -115,7 +119,7 @@ def find_datahub_urns(graph: DataHubGraph, dbt_node_ids: List[str]) -> List[str]
     filter_conditions = [
         {
             "field": "customProperties",
-            "value": f"{DBT_ID_PROP}={dbt_node_id}",
+            "values": [f"{DBT_ID_PROP}={dbt_node_id}"],
             "condition": "EQUAL",
         }
         for dbt_node_id in dbt_node_ids

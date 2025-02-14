@@ -1,19 +1,19 @@
 
 test: lint
-	venv/bin/pytest tests
+	pytest tests --cov=src --cov-report=xml:coverage.xml --junitxml=junit.xml -o junit_family=legacy
 
 setup:
-	# Create venv.
-	python3 -m venv venv
-	venv/bin/pip install --upgrade pip wheel setuptools
-	venv/bin/pip install -r requirements.txt -r requirements-dev.txt
+	uv pip install --upgrade pip wheel setuptools
+	uv pip install -r requirements.txt -r requirements-dev.txt
 
 lint:
-	venv/bin/black --check .
-	venv/bin/ruff .
-	venv/bin/mypy .
+	. venv/bin/activate
+	black --check .
+	ruff check .
+	mypy .
 
 lint-fix:
-	venv/bin/black .
-	venv/bin/ruff .
-	venv/bin/mypy .
+	black .
+	ruff check --fix .
+	ruff format .
+	mypy .
