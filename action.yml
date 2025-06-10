@@ -19,6 +19,11 @@ inputs:
   dbt_project_folder:
     description: "dbt project folder. Defaults to ."
     default: '.'
+
+  github_base_ref:
+    description: "Base reference branch for comparison"
+    required: false
+    default: ${{ github.base_ref }}    
   
   debug_mode:
     description: "Set to true to enable debug mode."
@@ -49,7 +54,7 @@ runs:
         DATAHUB_GMS_TOKEN: ${{ inputs.datahub_gms_token }}
         DATAHUB_FRONTEND_URL: ${{ inputs.datahub_frontend_url }}
         GITHUB_ACTION_PATH: ${{ github.action_path }}
-        GITHUB_BASE_REF: ${{ github.base_ref }}
+        GITHUB_BASE_REF: ${{ inputs.github_base_ref }}
         DEBUG_MODE: ${{ inputs.debug_mode }}
         MAX_IMPACTED_DOWNSTREAMS: ${{ inputs.max_impacted_downstreams }}
 
