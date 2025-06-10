@@ -29,10 +29,6 @@ if [ "${DEBUG_MODE}" = "true" ]; then
 	cat "${DBT_PROFILES_DIR}/profiles.yml"
 fi
 
-echo "=== DEBUG: Git checkout section ==="
-echo "DEBUG: DBT_GITHUB_BASE_REF value: '${DBT_GITHUB_BASE_REF}'"
-echo "=== END DEBUG ==="
-
 # Generate the previous manifest.
 git checkout "${DBT_GITHUB_BASE_REF}"
 dbt ls
