@@ -30,34 +30,11 @@ if [ "${DEBUG_MODE}" = "true" ]; then
 fi
 
 echo "=== DEBUG: Git checkout section ==="
-echo "DEBUG: All environment variables containing 'REF':"
-env | grep -i ref || echo "No REF variables found"
-
-echo "DEBUG: GITHUB_BASE_REF value: '${GITHUB_BASE_REF}'"
-echo "DEBUG: GITHUB_BASE_REF length: ${#GITHUB_BASE_REF}"
-echo "DEBUG: GITHUB_BASE_REF type: $(declare -p GITHUB_BASE_REF 2>/dev/null || echo 'variable not declared')"
-
-# Check if variable is actually set
-if [ -z "${GITHUB_BASE_REF}" ]; then
-    echo "DEBUG: GITHUB_BASE_REF is empty or unset!"
-else
-    echo "DEBUG: GITHUB_BASE_REF is set to: '${GITHUB_BASE_REF}'"
-fi
-
-# Show hex dump to catch invisible characters
-echo "DEBUG: GITHUB_BASE_REF hex dump:"
-echo -n "${GITHUB_BASE_REF}" | hexdump -C || echo "hexdump failed"
-
-# Show what git command will be executed
-echo "DEBUG: About to execute: git checkout '${GITHUB_BASE_REF}'"
-echo "DEBUG: Git branches available:"
-git branch -a
-
+echo "DEBUG: DBT_GITHUB_BASE_REF value: '${DBT_GITHUB_BASE_REF}'"
 echo "=== END DEBUG ==="
 
-
 # Generate the previous manifest.
-git checkout "${GITHUB_BASE_REF}"
+git checkout "${DBT_GITHUB_BASE_REF}"
 dbt ls
 cp -r target target-previous
 git checkout -
