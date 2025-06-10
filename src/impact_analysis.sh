@@ -30,7 +30,7 @@ if [ "${DEBUG_MODE}" = "true" ]; then
 fi
 
 # Generate the previous manifest.
-git checkout "${GITHUB_BASE_REF}"
+git checkout "${DBT_GITHUB_BASE_REF}"
 dbt ls
 cp -r target target-previous
 git checkout -
