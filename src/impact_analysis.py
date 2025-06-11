@@ -237,7 +237,7 @@ def dbt_impact_analysis() -> str:
     # Step 1 - determine which dbt nodes are impacted by the changes in a given PR.
     changed_dbt_nodes = determine_changed_dbt_models()
     dbt_id_to_dbt_node = {node["unique_id"]: node for node in changed_dbt_nodes}
-    # print(changed_dbt_nodes)
+    print(changed_dbt_nodes)
 
     # Step 2 - map dbt nodes to datahub urns.
     # In an ideal world, the datahub urns for dbt would just be the dbt node ids.
