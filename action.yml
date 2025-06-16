@@ -23,7 +23,12 @@ inputs:
   github_base_ref:
     description: "Base reference branch for comparison"
     required: false
-    default: ${{ github.base_ref }}    
+    default: ${{ github.base_ref }}
+  github_pr_number:
+    description: "PR Number"
+    required: false
+    default: ${{ github.event.number }}
+    
   
   debug_mode:
     description: "Set to true to enable debug mode."
@@ -33,6 +38,11 @@ inputs:
     description: "Maximum number of downstream generations."
     required: false
     default: 30
+
+outputs:
+  IMPACT_ANALYSIS_MD:
+    description: "Impact analysis markdown output"
+    value: ${{ steps.impact-analysis.outputs.IMPACT_ANALYSIS_MD }}
 
 runs:
   using: "composite"
@@ -54,6 +64,7 @@ runs:
         DATAHUB_GMS_TOKEN: ${{ inputs.datahub_gms_token }}
         DATAHUB_FRONTEND_URL: ${{ inputs.datahub_frontend_url }}
         GITHUB_ACTION_PATH: ${{ github.action_path }}
+        GITHUB_PR_NUMBER: ${{ inputs.github_pr_number }}
         DBT_GITHUB_BASE_REF: ${{ inputs.github_base_ref }}
         DEBUG_MODE: ${{ inputs.debug_mode }}
         MAX_IMPACTED_DOWNSTREAMS: ${{ inputs.max_impacted_downstreams }}
@@ -61,6 +72,7 @@ runs:
     # Post a comment on the PR.
     - uses: marocchino/sticky-pull-request-comment@v2.9.2
       with:
+        number: ${{ inputs.github_pr_number }}
         header: acryl-impact-analysis-${{ inputs.dbt_project_folder }}
         message: ${{ steps.impact-analysis.outputs.IMPACT_ANALYSIS_MD }}
 
