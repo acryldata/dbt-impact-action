@@ -70,7 +70,7 @@ runs:
         MAX_IMPACTED_DOWNSTREAMS: ${{ inputs.max_impacted_downstreams }}
 
     # Post a comment on the PR.
-    - uses: marocchino/sticky-pull-request-comment@v2.9.2
+    - uses: marocchino/sticky-pull-request-comment@v2.9.3
       with:
         number: ${{ inputs.github_pr_number }}
         header: acryl-impact-analysis-${{ inputs.dbt_project_folder }}
