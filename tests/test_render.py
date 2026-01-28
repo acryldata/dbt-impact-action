@@ -159,6 +159,22 @@ def test_extract_platform_from_dagster_urn():
     assert _extract_platform_from_urn(urn) == "Dagster"
 
 
+def test_extract_platform_from_dagster_with_airflow_in_name():
+    """Test that orchestrator is extracted from correct position, not from DAG name.
+    
+    Regression test: A Dagster pipeline named 'airflow_migration_pipeline' should
+    return 'Dagster', not 'Airflow'.
+    """
+    urn = "urn:li:dataFlow:(dagster,airflow_migration_pipeline,PROD)"
+    assert _extract_platform_from_urn(urn) == "Dagster"
+
+
+def test_extract_platform_from_prefect_urn():
+    """Test extracting platform from Prefect URN."""
+    urn = "urn:li:dataFlow:(prefect,my_flow,PROD)"
+    assert _extract_platform_from_urn(urn) == "Prefect"
+
+
 def test_extract_platform_from_unknown_urn():
     """Test extracting platform from unknown URN format."""
     urn = "urn:li:unknown:something"

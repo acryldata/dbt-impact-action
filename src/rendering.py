@@ -54,6 +54,7 @@ def _extract_platform_from_urn(urn: str) -> str:
     """Extract platform name from URN as a fallback."""
     # URN format: urn:li:dataJob:(urn:li:dataFlow:(airflow,dag_id,PROD),task_id)
     # or: urn:li:dataset:(urn:li:dataPlatform:bigquery,project.dataset.table,PROD)
+    # or: urn:li:dataFlow:(airflow,dag_id,PROD)
     try:
         if "dataPlatform:" in urn:
             # Extract from dataPlatform URN
@@ -61,12 +62,14 @@ def _extract_platform_from_urn(urn: str) -> str:
             end = urn.find(",", start)
             if end > start:
                 return urn[start:end].capitalize()
-        elif "dataFlow:" in urn or "dataJob:" in urn:
-            # Extract orchestrator from dataFlow/dataJob URN
-            # Format: urn:li:dataJob:(urn:li:dataFlow:(orchestrator,...),...)
-            for orchestrator in ["airflow", "dagster", "prefect", "argo", "spark"]:
-                if orchestrator in urn.lower():
-                    return orchestrator.capitalize()
+        elif "dataFlow:" in urn:
+            # Extract orchestrator from dataFlow URN
+            # Format: urn:li:dataFlow:(orchestrator,flow_id,env)
+            # or nested: urn:li:dataJob:(urn:li:dataFlow:(orchestrator,flow_id,env),task_id)
+            start = urn.find("dataFlow:(") + len("dataFlow:(")
+            end = urn.find(",", start)
+            if end > start:
+                return urn[start:end].capitalize()
     except Exception:
         pass
     return "Unknown"
