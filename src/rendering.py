@@ -19,6 +19,9 @@ def datahub_url_from_urn(
 
 
 def format_entity(frontend_base_url: str, downstream: dict) -> str:
+    # Safely extract URN first (required field, but be defensive)
+    urn = downstream.get("urn", "")
+
     # Safely extract platform name with fallback for entity types
     # that don't have platform in the GraphQL response (e.g., DataJob, DataFlow)
     platform_info = downstream.get("platform")
@@ -29,7 +32,6 @@ def format_entity(frontend_base_url: str, downstream: dict) -> str:
             platform = display_name
     else:
         # Fallback: try to extract platform from URN
-        urn = downstream.get("urn", "")
         platform = _extract_platform_from_urn(urn)
 
     # Safely extract entity name
@@ -37,9 +39,9 @@ def format_entity(frontend_base_url: str, downstream: dict) -> str:
     if properties and properties.get("name"):
         name = properties["name"]
     else:
-        name = downstream.get("urn", "Unknown")
+        name = urn if urn else "Unknown"
 
-    url = datahub_url_from_urn(frontend_base_url, downstream["urn"])
+    url = datahub_url_from_urn(frontend_base_url, urn) if urn else ""
 
     entity_type: str = downstream.get("type", "Entity").capitalize()
     if downstream.get("subTypes"):
@@ -62,7 +64,7 @@ def _extract_platform_from_urn(urn: str) -> str:
             end = urn.find(",", start)
             if end > start:
                 return urn[start:end].capitalize()
-        elif "dataFlow:" in urn:
+        elif "dataFlow:(" in urn:
             # Extract orchestrator from dataFlow URN
             # Format: urn:li:dataFlow:(orchestrator,flow_id,env)
             # or nested: urn:li:dataJob:(urn:li:dataFlow:(orchestrator,flow_id,env),task_id)
