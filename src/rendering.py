@@ -1,6 +1,9 @@
+import logging
 from typing import Optional
 
 from datahub.utilities.urns.urn import Urn, guess_entity_type
+
+logger = logging.getLogger(__name__)
 
 
 def datahub_url_from_urn(
@@ -19,8 +22,24 @@ def datahub_url_from_urn(
 
 
 def format_entity(frontend_base_url: str, downstream: dict) -> str:
-    # Safely extract URN first (required field, but be defensive)
-    urn = downstream.get("urn", "")
+    """Format a downstream entity as a markdown link for display.
+
+    Args:
+        frontend_base_url: The base URL of the DataHub frontend (e.g., "https://datahub.example.com")
+        downstream: A dictionary containing entity data from the GraphQL response.
+            Expected keys: urn (required), type, platform, properties, subTypes
+
+    Returns:
+        A markdown formatted string like "Platform EntityType [name](url)"
+        Falls back gracefully if optional fields are missing.
+
+    Raises:
+        KeyError: If the required 'urn' field is missing from downstream.
+    """
+    # URN is required - fail fast if missing (it's the primary key in DataHub)
+    if "urn" not in downstream:
+        raise KeyError("Required field 'urn' is missing from downstream entity")
+    urn = downstream["urn"]
 
     # Safely extract platform name with fallback for entity types
     # that don't have platform in the GraphQL response (e.g., DataJob, DataFlow)
@@ -39,9 +58,9 @@ def format_entity(frontend_base_url: str, downstream: dict) -> str:
     if properties and properties.get("name"):
         name = properties["name"]
     else:
-        name = urn if urn else "Unknown"
+        name = urn  # URN is guaranteed to exist at this point
 
-    url = datahub_url_from_urn(frontend_base_url, urn) if urn else ""
+    url = datahub_url_from_urn(frontend_base_url, urn)
 
     entity_type: str = downstream.get("type", "Entity").capitalize()
     if downstream.get("subTypes"):
@@ -53,25 +72,47 @@ def format_entity(frontend_base_url: str, downstream: dict) -> str:
 
 
 def _extract_platform_from_urn(urn: str) -> str:
-    """Extract platform name from URN as a fallback."""
-    # URN format: urn:li:dataJob:(urn:li:dataFlow:(airflow,dag_id,PROD),task_id)
-    # or: urn:li:dataset:(urn:li:dataPlatform:bigquery,project.dataset.table,PROD)
-    # or: urn:li:dataFlow:(airflow,dag_id,PROD)
+    """Extract platform name from URN as a fallback when platform field is missing.
+
+    Uses the DataHub URN utility library to properly parse URNs and extract
+    platform/orchestrator information. Handles all entity types including:
+    - Dataset URNs (extracts platform)
+    - DataFlow URNs (extracts orchestrator)
+    - DataJob URNs (extracts orchestrator from nested DataFlow URN)
+
+    Args:
+        urn: The URN string to parse.
+
+    Returns:
+        The capitalized platform/orchestrator name, or "Unknown" if parsing fails.
+    """
+    if not urn:
+        return "Unknown"
+
     try:
-        if "dataPlatform:" in urn:
-            # Extract from dataPlatform URN
-            start = urn.find("dataPlatform:") + len("dataPlatform:")
-            end = urn.find(",", start)
-            if end > start:
-                return urn[start:end].capitalize()
-        elif "dataFlow:(" in urn:
-            # Extract orchestrator from dataFlow URN
-            # Format: urn:li:dataFlow:(orchestrator,flow_id,env)
-            # or nested: urn:li:dataJob:(urn:li:dataFlow:(orchestrator,flow_id,env),task_id)
-            start = urn.find("dataFlow:(") + len("dataFlow:(")
-            end = urn.find(",", start)
-            if end > start:
-                return urn[start:end].capitalize()
-    except Exception:
-        pass
+        urn_obj = Urn.from_string(urn)
+
+        # For DataJob URNs, get the nested DataFlow URN first
+        if hasattr(urn_obj, "flow"):
+            flow_urn = Urn.from_string(urn_obj.flow)
+            if hasattr(flow_urn, "orchestrator"):
+                return flow_urn.orchestrator.capitalize()
+
+        # Try different attributes based on entity type
+        # DatasetUrn has 'platform', DataFlowUrn has 'orchestrator'
+        for attr in ["orchestrator", "platform", "dashboard_tool"]:
+            try:
+                value = getattr(urn_obj, attr, None)
+                if value:
+                    # If it's a platform URN, extract the platform name
+                    if "dataPlatform:" in str(value):
+                        platform_urn = Urn.from_string(str(value))
+                        return platform_urn.entity_ids[0].capitalize()
+                    return str(value).capitalize()
+            except (AttributeError, IndexError):
+                continue
+
+    except Exception as e:
+        logger.warning(f"Failed to extract platform from URN '{urn}': {e}")
+
     return "Unknown"

@@ -1,4 +1,11 @@
+import re
+
+import pytest
+
 from rendering import datahub_url_from_urn, format_entity, _extract_platform_from_urn
+
+# Regex pattern to validate markdown link format: "Platform Type [name](url)"
+MARKDOWN_LINK_PATTERN = re.compile(r"^[\w\s]+ [\w\s]+ \[.+\]\(https?://.+\)$")
 
 
 def test_url_generation():
@@ -24,9 +31,13 @@ def test_format_entity_with_platform():
         "subTypes": {"typeNames": ["Table"]},
     }
     result = format_entity("https://datahub.example.com", entity)
-    assert "BigQuery" in result
-    assert "Table" in result
-    assert "my_table" in result
+
+    # Validate exact format: "Platform Type [name](url)"
+    assert (
+        result
+        == "BigQuery Table [my_table](https://datahub.example.com/dataset/urn%3Ali%3Adataset%3A%28urn%3Ali%3AdataPlatform%3Abigquery%2Cproject.dataset.table%2CPROD%29)"
+    )
+    assert MARKDOWN_LINK_PATTERN.match(result)
 
 
 def test_format_entity_without_platform_display_name():
@@ -196,3 +207,41 @@ def test_url_generation_with_suffix():
         )
         == "https://customer.acryl.io/dataset/urn%3Ali%3Adataset%3A%28urn%3Ali%3AdataPlatform%3Asnowflake%2Cdb.table%2CPROD%29/Lineage"
     )
+
+
+# Edge case tests
+
+
+def test_format_entity_missing_urn_raises_error():
+    """Test that format_entity raises KeyError when URN is missing.
+
+    URN is the primary key in DataHub - if it's missing, that's a critical
+    API bug that should fail loudly, not silently.
+    """
+    entity = {
+        "type": "DATASET",
+        "properties": {"name": "my_table"},
+        "platform": {"name": "bigquery"},
+    }
+    with pytest.raises(KeyError, match="Required field 'urn' is missing"):
+        format_entity("https://datahub.example.com", entity)
+
+
+def test_format_entity_empty_downstream_raises_error():
+    """Test that format_entity raises KeyError for empty downstream dict."""
+    with pytest.raises(KeyError, match="Required field 'urn' is missing"):
+        format_entity("https://datahub.example.com", {})
+
+
+def test_extract_platform_from_invalid_urn():
+    """Test extracting platform from a completely invalid URN."""
+    assert _extract_platform_from_urn("not-a-valid-urn") == "Unknown"
+    assert _extract_platform_from_urn("urn:li:") == "Unknown"
+    assert _extract_platform_from_urn("random garbage") == "Unknown"
+
+
+def test_extract_platform_from_malformed_dataflow_urn():
+    """Test extracting platform from malformed dataFlow URN without parenthesis."""
+    # This URN has dataFlow: but no opening parenthesis
+    urn = "urn:li:dataFlow:malformed"
+    assert _extract_platform_from_urn(urn) == "Unknown"
