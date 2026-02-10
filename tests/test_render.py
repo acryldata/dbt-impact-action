@@ -63,6 +63,8 @@ def test_format_entity_missing_platform():
     result = format_entity("https://datahub.example.com", entity)
     assert "Airflow" in result
     assert "my_airflow_task" in result
+    # Verify entity type is properly formatted (not "Data_job")
+    assert "Data Job" in result
 
 
 def test_format_entity_platform_is_none():
@@ -111,6 +113,8 @@ def test_format_entity_dataflow():
     result = format_entity("https://datahub.example.com", entity)
     assert "Airflow" in result
     assert "my_dag" in result
+    # Verify entity type is properly formatted (not "Data_flow")
+    assert "Data Flow" in result
 
 
 def test_format_entity_with_subtypes():

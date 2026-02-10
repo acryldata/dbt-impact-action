@@ -62,7 +62,9 @@ def format_entity(frontend_base_url: str, downstream: dict) -> str:
 
     url = datahub_url_from_urn(frontend_base_url, urn)
 
-    entity_type: str = downstream.get("type", "Entity").capitalize()
+    # Format entity type: "DATA_JOB" -> "Data Job" (not "Data_job")
+    raw_type = downstream.get("type", "Entity")
+    entity_type: str = raw_type.replace("_", " ").title()
     if downstream.get("subTypes"):
         type_names = downstream["subTypes"].get("typeNames")
         if type_names:
