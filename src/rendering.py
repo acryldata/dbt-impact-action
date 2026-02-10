@@ -112,6 +112,13 @@ def _extract_platform_from_urn(urn: str) -> str:
             except (AttributeError, IndexError):
                 continue
 
+        # No known platform attribute found - log for visibility
+        entity_type = urn_obj.entity_type
+        logger.warning(
+            f"Could not extract platform from URN '{urn}' (entity_type={entity_type}). "
+            f"Consider adding support for this entity type."
+        )
+
     except Exception as e:
         logger.warning(f"Failed to extract platform from URN '{urn}': {e}")
 

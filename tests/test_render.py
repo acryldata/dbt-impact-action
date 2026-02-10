@@ -245,3 +245,23 @@ def test_extract_platform_from_malformed_dataflow_urn():
     # This URN has dataFlow: but no opening parenthesis
     urn = "urn:li:dataFlow:malformed"
     assert _extract_platform_from_urn(urn) == "Unknown"
+
+
+def test_extract_platform_logs_warning_for_unknown_entity_type(caplog):
+    """Test that a warning is logged when platform cannot be extracted from a valid URN.
+
+    This ensures visibility when we encounter entity types we don't know how to handle,
+    without breaking the user's workflow.
+    """
+    import logging
+
+    # Use a valid URN format that doesn't have orchestrator/platform/dashboard_tool
+    # CorpUser URN is a good example - it's valid but has no platform concept
+    urn = "urn:li:corpuser:testuser"
+
+    with caplog.at_level(logging.WARNING):
+        result = _extract_platform_from_urn(urn)
+
+    assert result == "Unknown"
+    assert "Could not extract platform from URN" in caplog.text
+    assert "corpuser" in caplog.text.lower() or "corpUser" in caplog.text
