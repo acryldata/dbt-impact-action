@@ -279,7 +279,7 @@ def dbt_impact_analysis() -> str:
         else:
             output += "No downstreams impacted.\n"
 
-    output += "\n\n_If a dbt model is reported as changed even though it's file contents have not changed, it's likely because a dbt macro or other metadata has changed._\n\n"
+    output += "\n\n_If a dbt model is reported as changed even though its file contents have not changed, it's likely because a dbt macro or other metadata has changed._\n\n"
 
     return output
 
